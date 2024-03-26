@@ -77,9 +77,11 @@
     "@types/react": "^18.2.44"
   },
   "peerDependencies": {
+    "@react-native-community/datetimepicker": ">= 7",
     "react": "*",
     "react-native": "*",
-    "react-native-paper": ">5"
+    "react-native-modal-datetime-picker": ">= 17",
+    "react-native-paper": ">= 5"
   },
   "workspaces": [
     "example"

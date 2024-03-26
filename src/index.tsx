@@ -4,11 +4,8 @@ import React, {
   useEffect,
   useState,
   useCallback,
-  Fragment,
 } from 'react';
 import {
-  type LayoutChangeEvent,
-  ScrollView,
   type TextStyle,
   TouchableWithoutFeedback,
   View,
@@ -16,34 +13,24 @@ import {
   StyleSheet,
 } from 'react-native';
 import {
-  Checkbox,
-  Divider,
-  Menu,
   TextInput,
   TouchableRipple,
   useTheme,
   type TextInputProps,
   type MD3Theme,
 } from 'react-native-paper';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
 
 type Without<T, K> = Pick<T, Exclude<keyof T, K>>;
 
 export interface DateTimePropsInterface {
-  visible: boolean;
-  multiSelect?: boolean;
-  onDismiss: () => void;
-  showDropDown: () => void;
-  value: any;
-  setValue: (_value: any) => void;
+  value: string | null | undefined;
   label?: string | undefined;
   placeholder?: string | undefined;
   mode?: 'outlined' | 'flat' | undefined;
   inputProps?: TextInputPropsWithoutTheme;
-  list: Array<{
-    label: string;
-    value: string | number;
-    custom?: ReactNode;
-  }>;
+  type?: 'date' | 'time' | 'datetime';
+  //
   dropDownContainerMaxHeight?: number;
   dropDownContainerHeight?: number;
   activeColor?: string;
@@ -54,6 +41,9 @@ export interface DateTimePropsInterface {
   dropDownItemStyle?: ViewStyle;
   dropDownItemTextStyle?: TextStyle;
   accessibilityLabel?: string;
+  //
+  onSubmit: (args: string) => void;
+  onCancel?: () => void;
 }
 
 type TextInputPropsWithoutTheme = Without<TextInputProps, 'theme'>;
@@ -74,167 +64,47 @@ const DateTime = forwardRef<TouchableWithoutFeedback, DateTimePropsInterface>(
       placeholder,
       inputProps,
       list,
-      dropDownContainerMaxHeight,
-      dropDownContainerHeight,
       theme = defTheme,
-      dropDownStyle,
-      dropDownItemStyle,
-      dropDownItemSelectedStyle,
-      dropDownItemTextStyle,
-      dropDownItemSelectedTextStyle,
       accessibilityLabel,
+
+      type = 'date',
     } = props;
     const [displayValue, setDisplayValue] = useState('');
-    const [inputLayout, setInputLayout] = useState({
-      height: 0,
-      width: 0,
-      x: 0,
-      y: 0,
-    });
+    const [showDateTime, setShowDateTime] = useState<boolean>(false);
 
-    const onLayout = (event: LayoutChangeEvent) => {
-      setInputLayout(event.nativeEvent.layout);
-    };
-
-    useEffect(() => {
-      if (multiSelect) {
-        const _labels = list
-          .filter((_) => value.indexOf(_.value) !== -1)
-          .map((_) => _.label)
-          .join(', ');
-        setDisplayValue(_labels);
-      } else {
-        const _label = list.find((_) => _.value === value)?.label;
-        if (_label) {
-          setDisplayValue(_label);
-        }
-      }
-    }, [list, value]);
-
-    const isActive = useCallback(
-      (currentValue: any) => {
-        if (multiSelect) {
-          return value.indexOf(currentValue) !== -1;
-        } else {
-          return value === currentValue;
-        }
-      },
-      [value]
-    );
-
-    const setActive = useCallback(
-      (currentValue: any) => {
-        if (multiSelect) {
-          const valueIndex = value.indexOf(currentValue);
-          const values = value.split(',');
-          if (valueIndex === -1) {
-            setValue([...values, currentValue].join(','));
-          } else {
-            setValue([...values].filter((e) => e !== currentValue).join(','));
-          }
-        } else {
-          setValue(currentValue);
-        }
-      },
-      [value]
-    );
+    function _renderModalDatePicker() {
+      return (
+        <DateTimePickerModal
+          // date={displayValue ? moment(displayValue).toDate() : new Date()}
+          date={displayValue}
+          mode={type}
+          isVisible={showDateTime}
+          onConfirm={(date: Date) => _onPressConfirm(date)}
+          onCancel={() => _onPressCancel()}
+        />
+      );
+    }
 
     return (
-      <Menu
-        visible={visible}
-        onDismiss={onDismiss}
-        theme={theme}
-        anchor={
-          <TouchableRipple
-            ref={ref as any}
-            onPress={showDropDown}
-            onLayout={onLayout}
-            accessibilityLabel={accessibilityLabel}
-          >
-            <View pointerEvents={'none'}>
-              <TextInput
-                value={displayValue}
-                mode={mode}
-                label={label}
-                placeholder={placeholder}
-                pointerEvents={'none'}
-                onFocus={showDropDown}
-                theme={theme}
-                right={
-                  <TextInput.Icon icon={visible ? 'menu-up' : 'menu-down'} />
-                }
-                {...inputProps}
-              />
-            </View>
-          </TouchableRipple>
-        }
-        style={{
-          maxWidth: inputLayout?.width,
-          width: inputLayout?.width,
-          marginTop: inputLayout?.height,
-          ...dropDownStyle,
-        }}
+      <TouchableRipple
+        ref={ref as any}
+        onPress={() => setShowDateTime((e: boolean) => !e)}
+        // accessibilityLabel={accessibilityLabel}
       >
-        <ScrollView
-          bounces={false}
-          style={{
-            ...(dropDownContainerHeight
-              ? {
-                  height: dropDownContainerHeight,
-                }
-              : {
-                  maxHeight: dropDownContainerMaxHeight || 200,
-                }),
-          }}
-        >
-          {list.map((_item, _index) => (
-            <Fragment key={_item.value}>
-              <TouchableRipple
-                style={styles.itemRipple}
-                onPress={() => {
-                  setActive(_item.value);
-                  if (onDismiss) {
-                    onDismiss();
-                  }
-                }}
-              >
-                <Fragment>
-                  <Menu.Item
-                    titleStyle={{
-                      color: isActive(_item.value)
-                        ? activeColor || theme?.colors.primary
-                        : theme?.colors.onBackground,
-                      ...(isActive(_item.value)
-                        ? dropDownItemSelectedTextStyle
-                        : dropDownItemTextStyle),
-                    }}
-                    title={_item.custom || _item.label}
-                    style={[
-                      styles.flex1,
-                      {
-                        maxWidth: inputLayout?.width,
-                        ...(isActive(_item.value)
-                          ? dropDownItemSelectedStyle
-                          : dropDownItemStyle),
-                      },
-                    ]}
-                  />
-                  {multiSelect && (
-                    <Checkbox.Android
-                      theme={{
-                        colors: { accent: theme?.colors.primary },
-                      }}
-                      status={isActive(_item.value) ? 'checked' : 'unchecked'}
-                      onPress={() => setActive(_item.value)}
-                    />
-                  )}
-                </Fragment>
-              </TouchableRipple>
-              <Divider />
-            </Fragment>
-          ))}
-        </ScrollView>
-      </Menu>
+        <View pointerEvents={'none'}>
+          <TextInput
+            value={displayValue}
+            mode={mode}
+            label={label}
+            placeholder={placeholder}
+            pointerEvents={'none'}
+            theme={theme}
+            right={<TextInput.Icon icon={'calendar'} />}
+            {...inputProps}
+          />
+        </View>
+        {_renderModalDatePicker()}
+      </TouchableRipple>
     );
   }
 );

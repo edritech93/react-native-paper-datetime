@@ -2777,6 +2777,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@react-native-community/datetimepicker@npm:^7.6.3":
+  version: 7.6.3
+  resolution: "@react-native-community/datetimepicker@npm:7.6.3"
+  dependencies:
+    invariant: ^2.2.4
+  checksum: 7d69d8ec89a0573d7f4f250c0f78c4c69c0e522c907c19b2302abf437b9e5a01f10a530cad99c1e5dfebc7197938fdf3811ef97230439d8af5cf2ec6edce83d3
+  languageName: node
+  linkType: hard
+
 "@react-native/assets-registry@npm:0.73.1":
   version: 0.73.1
   resolution: "@react-native/assets-registry@npm:0.73.1"
@@ -10848,6 +10857,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-modal-datetime-picker@npm:^17.1.0":
+  version: 17.1.0
+  resolution: "react-native-modal-datetime-picker@npm:17.1.0"
+  dependencies:
+    prop-types: ^15.7.2
+  peerDependencies:
+    "@react-native-community/datetimepicker": ">=6.7.0"
+    react-native: ">=0.65.0"
+  checksum: 8a5bb21167799cc5410c0fb6c39bb3495fbaa463ef57d8f90c65429697c2b02b2e4e046e3e91c6246e1f4bd187c5fbcd30f61a6449b8d68808e68715b1332779
+  languageName: node
+  linkType: hard
+
 "react-native-paper-datetime-example@workspace:example":
   version: 0.0.0-use.local
   resolution: "react-native-paper-datetime-example@workspace:example"
@@ -10855,12 +10876,14 @@ __metadata:
     "@babel/core": ^7.20.0
     "@babel/preset-env": ^7.20.0
     "@babel/runtime": ^7.20.0
+    "@react-native-community/datetimepicker": ^7.6.3
     "@react-native/babel-preset": 0.73.21
     "@react-native/metro-config": 0.73.5
     "@react-native/typescript-config": 0.73.1
     babel-plugin-module-resolver: ^5.0.0
     react: 18.2.0
     react-native: 0.73.6
+    react-native-modal-datetime-picker: ^17.1.0
     react-native-paper: ^5.12.3
     react-native-safe-area-context: ^4.9.0
     react-native-vector-icons: ^10.0.3
@@ -10891,9 +10914,11 @@ __metadata:
     release-it: ^15.0.0
     typescript: ^5.2.2
   peerDependencies:
+    "@react-native-community/datetimepicker": ">= 7"
     react: "*"
     react-native: "*"
-    react-native-paper: ">5"
+    react-native-modal-datetime-picker: ">= 17"
+    react-native-paper: ">= 5"
   languageName: unknown
   linkType: soft
 

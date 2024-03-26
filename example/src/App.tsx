@@ -6,64 +6,27 @@ import {
   MD3DarkTheme,
   MD3LightTheme,
 } from 'react-native-paper';
-import React, {useState} from 'react';
-import {SafeAreaView, StatusBar, StyleSheet, View} from 'react-native';
-import DropDown from 'react-native-paper-dropdown';
+import React, { useState } from 'react';
+import { SafeAreaView, StatusBar, StyleSheet, View } from 'react-native';
+import DateTime from 'react-native-paper-datetime';
 
 function App() {
   const [nightMode, setNightmode] = useState(false);
-  const [showDropDown, setShowDropDown] = useState(false);
-  const [gender, setGender] = useState<string>('');
-  const [showMultiSelectDropDown, setShowMultiSelectDropDown] = useState(false);
-  const [colors, setColors] = useState<string>('');
-  const genderList = [
-    {
-      label: 'Male',
-      value: 'male',
-    },
-    {
-      label: 'Female',
-      value: 'female',
-    },
-    {
-      label: 'Others',
-      value: 'others',
-    },
-  ];
-  const colorList = [
-    {
-      label: 'White',
-      value: 'white',
-    },
-    {
-      label: 'Red',
-      value: 'red',
-    },
-    {
-      label: 'Blue',
-      value: 'blue',
-    },
-    {
-      label: 'Green',
-      value: 'green',
-    },
-    {
-      label: 'Orange',
-      value: 'orange',
-    },
-  ];
+  const [example1, setExample1] = useState<string | null>(null);
 
   return (
     <Provider theme={nightMode ? MD3DarkTheme : MD3LightTheme}>
       <ThemeProvider theme={nightMode ? MD3DarkTheme : MD3LightTheme}>
         <StatusBar
           backgroundColor={
-            nightMode ? MD3DarkTheme.colors.surface : MD3LightTheme.colors.primary
+            nightMode
+              ? MD3DarkTheme.colors.surface
+              : MD3LightTheme.colors.primary
           }
           barStyle={'light-content'}
         />
         <Appbar.Header>
-          <Appbar.Content title="React Native Paper Dropdown" />
+          <Appbar.Content title="React Native Paper DateTime" />
           <Appbar.Action
             icon={nightMode ? 'brightness-7' : 'brightness-3'}
             onPress={() => setNightmode(!nightMode)}
@@ -71,28 +34,13 @@ function App() {
         </Appbar.Header>
         <Surface style={styles.containerStyle}>
           <SafeAreaView style={styles.safeContainerStyle}>
-            <DropDown
-              label={'Gender'}
+            <DateTime
+              label={'Example Date'}
               mode={'outlined'}
-              visible={showDropDown}
-              showDropDown={() => setShowDropDown(true)}
-              onDismiss={() => setShowDropDown(false)}
-              value={gender}
-              setValue={setGender}
-              list={genderList}
+              value={example1}
+              onSubmit={() => {}}
             />
             <View style={styles.spacerStyle} />
-            <DropDown
-              label={'Colors'}
-              mode={'outlined'}
-              visible={showMultiSelectDropDown}
-              showDropDown={() => setShowMultiSelectDropDown(true)}
-              onDismiss={() => setShowMultiSelectDropDown(false)}
-              value={colors}
-              setValue={setColors}
-              list={colorList}
-              multiSelect
-            />
           </SafeAreaView>
         </Surface>
       </ThemeProvider>
