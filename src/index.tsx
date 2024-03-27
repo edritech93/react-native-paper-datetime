@@ -1,13 +1,5 @@
-import React, {
-  type ReactNode,
-  forwardRef,
-  useEffect,
-  useState,
-  useCallback,
-  Fragment,
-} from 'react';
+import React, { forwardRef, useState } from 'react';
 import {
-  type TextStyle,
   TouchableWithoutFeedback,
   View,
   type ViewStyle,
@@ -23,6 +15,7 @@ import {
   HelperText,
 } from 'react-native-paper';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import moment from 'moment';
 
 type Without<T, K> = Pick<T, Exclude<keyof T, K>>;
 
@@ -30,10 +23,11 @@ export interface DateTimePropsInterface {
   label?: string | undefined;
   placeholder?: string | undefined;
   mode?: 'outlined' | 'flat' | undefined;
-  type?: 'date' | 'time' | 'datetime';
+  type: 'date' | 'time' | 'datetime';
+  format: string;
   inputProps?: TextInputPropsWithoutTheme;
-  value: string | null | undefined;
   theme?: MD3Theme;
+  value: string;
   message?: string;
   error?: any;
   containerStyle?: StyleProp<ViewStyle>;
@@ -46,27 +40,36 @@ type TextInputPropsWithoutTheme = Without<TextInputProps, 'theme'>;
 
 const DateTime = forwardRef<TouchableWithoutFeedback, DateTimePropsInterface>(
   (props, ref) => {
-    const defTheme = useTheme();
+    const themeDefault = useTheme();
     const {
-      mode,
       label,
       placeholder,
+      mode,
+      type,
+      format,
       inputProps,
-      theme = defTheme,
-      type = 'date',
+      theme = themeDefault,
+      value,
       message,
       error,
+      containerStyle,
       errorStyle,
+      onSubmit,
+      onCancel,
     } = props;
-    const [displayValue, setDisplayValue] = useState(new Date());
+
     const [showDateTime, setShowDateTime] = useState<boolean>(false);
 
+    function getValue() {
+      return moment(value).format(format).toString();
+    }
+
     function _onPressConfirm(date: Date) {
+      setShowDateTime(false);
       if (onCancel) {
         onCancel(); //NOTE: trigger setFieldTouched
       }
-      setShowDateTime(false);
-      onSubmit(String(date));
+      onSubmit(date.toISOString());
     }
 
     function _onPressCancel() {
@@ -79,8 +82,7 @@ const DateTime = forwardRef<TouchableWithoutFeedback, DateTimePropsInterface>(
     function _renderModalDatePicker() {
       return (
         <DateTimePickerModal
-          // date={displayValue ? moment(displayValue).toDate() : new Date()}
-          date={displayValue}
+          date={value ? moment(value).toDate() : new Date()}
           mode={type}
           isVisible={showDateTime}
           onConfirm={(date: Date) => _onPressConfirm(date)}
@@ -90,14 +92,14 @@ const DateTime = forwardRef<TouchableWithoutFeedback, DateTimePropsInterface>(
     }
 
     return (
-      <Fragment>
+      <View style={containerStyle}>
         <TouchableRipple ref={ref as any} onPress={() => setShowDateTime(true)}>
           <View pointerEvents={'none'}>
             <TextInput
-              value={displayValue.toString()}
-              mode={mode}
               label={label}
+              mode={mode}
               placeholder={placeholder}
+              value={value ? getValue() : ''}
               pointerEvents={'none'}
               theme={theme}
               right={<TextInput.Icon icon={'calendar'} />}
@@ -115,7 +117,7 @@ const DateTime = forwardRef<TouchableWithoutFeedback, DateTimePropsInterface>(
           </HelperText>
         )}
         {_renderModalDatePicker()}
-      </Fragment>
+      </View>
     );
   }
 );
