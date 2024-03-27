@@ -1,3 +1,13 @@
+import React, { Fragment, useState } from 'react';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  View,
+} from 'react-native';
 import {
   Appbar,
   Provider,
@@ -5,14 +15,37 @@ import {
   ThemeProvider,
   MD3DarkTheme,
   MD3LightTheme,
+  Button,
 } from 'react-native-paper';
-import React, { useState } from 'react';
-import { SafeAreaView, StatusBar, StyleSheet, View } from 'react-native';
+import { Formik } from 'formik';
+import * as Yup from 'yup';
+import { DateTimePicker } from './components';
 import DateTime from 'react-native-paper-datetime';
+
+type InitialType = {
+  dateTime1: string;
+  dateTime2: string;
+  dateTime3: string;
+};
 
 function App() {
   const [nightMode, setNightmode] = useState(false);
-  const [example1, setExample1] = useState<string | null>(null);
+
+  const initialData: InitialType = {
+    dateTime1: '',
+    dateTime2: '',
+    dateTime3: '',
+  };
+
+  const validateSchema = Yup.object().shape({
+    dateTime1: Yup.string().required(`Date Time 1 is required`),
+    dateTime2: Yup.string().required(`Date Time 2 is required`),
+    dateTime3: Yup.string().required(`Date Time 3 is required`),
+  });
+
+  const _onSubmit = (values: InitialType) => {
+    console.log(values);
+  };
 
   return (
     <Provider theme={nightMode ? MD3DarkTheme : MD3LightTheme}>
@@ -34,13 +67,44 @@ function App() {
         </Appbar.Header>
         <Surface style={styles.containerStyle}>
           <SafeAreaView style={styles.safeContainerStyle}>
-            <DateTime
-              label={'Example Date'}
-              mode={'outlined'}
-              value={example1}
-              onSubmit={() => {}}
-            />
-            <View style={styles.spacerStyle} />
+            <Formik
+              initialValues={initialData}
+              enableReinitialize={true}
+              onSubmit={_onSubmit}
+              validationSchema={validateSchema}
+            >
+              {({
+                values,
+                handleChange,
+                errors,
+                setFieldTouched,
+                touched,
+                isValid,
+                handleSubmit,
+              }) => (
+                <Fragment>
+                  <KeyboardAvoidingView
+                    style={styles.flex1}
+                    behavior={'padding'}
+                    enabled={Platform.OS === 'ios' ? true : false}
+                  >
+                    <ScrollView>
+                      <DateTime
+                        label={'Example 1'}
+                        value={values.dateTime1}
+                        error={touched.dateTime1 && errors.dateTime1}
+                        message={errors.dateTime1}
+                        onSubmit={handleChange('dateTime1')}
+                        onCancel={() => setFieldTouched('dateTime1')}
+                      />
+                    </ScrollView>
+                  </KeyboardAvoidingView>
+                  <Button disabled={!isValid} onPress={handleSubmit as any}>
+                    OK
+                  </Button>
+                </Fragment>
+              )}
+            </Formik>
           </SafeAreaView>
         </Surface>
       </ThemeProvider>
@@ -59,6 +123,9 @@ const styles = StyleSheet.create({
     flex: 1,
     margin: 20,
     justifyContent: 'center',
+  },
+  flex1: {
+    flex: 1,
   },
 });
 

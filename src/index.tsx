@@ -4,6 +4,7 @@ import React, {
   useEffect,
   useState,
   useCallback,
+  Fragment,
 } from 'react';
 import {
   type TextStyle,
@@ -11,6 +12,7 @@ import {
   View,
   type ViewStyle,
   StyleSheet,
+  type StyleProp,
 } from 'react-native';
 import {
   TextInput,
@@ -18,30 +20,24 @@ import {
   useTheme,
   type TextInputProps,
   type MD3Theme,
+  HelperText,
 } from 'react-native-paper';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 
 type Without<T, K> = Pick<T, Exclude<keyof T, K>>;
 
 export interface DateTimePropsInterface {
-  value: string | null | undefined;
   label?: string | undefined;
   placeholder?: string | undefined;
   mode?: 'outlined' | 'flat' | undefined;
-  inputProps?: TextInputPropsWithoutTheme;
   type?: 'date' | 'time' | 'datetime';
-  //
-  dropDownContainerMaxHeight?: number;
-  dropDownContainerHeight?: number;
-  activeColor?: string;
+  inputProps?: TextInputPropsWithoutTheme;
+  value: string | null | undefined;
   theme?: MD3Theme;
-  dropDownStyle?: ViewStyle;
-  dropDownItemSelectedTextStyle?: TextStyle;
-  dropDownItemSelectedStyle?: ViewStyle;
-  dropDownItemStyle?: ViewStyle;
-  dropDownItemTextStyle?: TextStyle;
-  accessibilityLabel?: string;
-  //
+  message?: string;
+  error?: any;
+  containerStyle?: StyleProp<ViewStyle>;
+  errorStyle?: StyleProp<ViewStyle>;
   onSubmit: (args: string) => void;
   onCancel?: () => void;
 }
@@ -52,25 +48,33 @@ const DateTime = forwardRef<TouchableWithoutFeedback, DateTimePropsInterface>(
   (props, ref) => {
     const defTheme = useTheme();
     const {
-      multiSelect = false,
-      visible,
-      onDismiss,
-      showDropDown,
-      value,
-      setValue,
-      activeColor,
       mode,
       label,
       placeholder,
       inputProps,
-      list,
       theme = defTheme,
-      accessibilityLabel,
-
       type = 'date',
+      message,
+      error,
+      errorStyle,
     } = props;
-    const [displayValue, setDisplayValue] = useState('');
+    const [displayValue, setDisplayValue] = useState(new Date());
     const [showDateTime, setShowDateTime] = useState<boolean>(false);
+
+    function _onPressConfirm(date: Date) {
+      if (onCancel) {
+        onCancel(); //NOTE: trigger setFieldTouched
+      }
+      setShowDateTime(false);
+      onSubmit(String(date));
+    }
+
+    function _onPressCancel() {
+      setShowDateTime(false);
+      if (onCancel) {
+        onCancel(); //NOTE: trigger setFieldTouched
+      }
+    }
 
     function _renderModalDatePicker() {
       return (
@@ -86,25 +90,32 @@ const DateTime = forwardRef<TouchableWithoutFeedback, DateTimePropsInterface>(
     }
 
     return (
-      <TouchableRipple
-        ref={ref as any}
-        onPress={() => setShowDateTime((e: boolean) => !e)}
-        // accessibilityLabel={accessibilityLabel}
-      >
-        <View pointerEvents={'none'}>
-          <TextInput
-            value={displayValue}
-            mode={mode}
-            label={label}
-            placeholder={placeholder}
-            pointerEvents={'none'}
-            theme={theme}
-            right={<TextInput.Icon icon={'calendar'} />}
-            {...inputProps}
-          />
-        </View>
+      <Fragment>
+        <TouchableRipple ref={ref as any} onPress={() => setShowDateTime(true)}>
+          <View pointerEvents={'none'}>
+            <TextInput
+              value={displayValue.toString()}
+              mode={mode}
+              label={label}
+              placeholder={placeholder}
+              pointerEvents={'none'}
+              theme={theme}
+              right={<TextInput.Icon icon={'calendar'} />}
+              {...inputProps}
+            />
+          </View>
+        </TouchableRipple>
+        {error && (
+          <HelperText
+            type={'error'}
+            visible={true}
+            style={[styles.wrapError, errorStyle]}
+          >
+            {message}
+          </HelperText>
+        )}
         {_renderModalDatePicker()}
-      </TouchableRipple>
+      </Fragment>
     );
   }
 );
@@ -112,12 +123,8 @@ const DateTime = forwardRef<TouchableWithoutFeedback, DateTimePropsInterface>(
 export default DateTime;
 
 const styles = StyleSheet.create({
-  wrapSearch: {
-    marginHorizontal: 16,
-  },
-  itemRipple: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  wrapError: {
+    marginTop: -4,
   },
   flex1: {
     flex: 1,
